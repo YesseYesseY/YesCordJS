@@ -74,6 +74,9 @@ class DiscordBot {
     constructor(intents=0) {
         this.intents = intents;
 
+        /** @private */
+        this.application_id = undefined;
+
         /** @description READY gateway event */
         this.OnReady = undefined;
 
@@ -88,6 +91,7 @@ class DiscordBot {
     start(token) {
         if (!token.startsWith("Bot ")) token = "Bot " + token;
         this.token = token;
+
         this.ws = new WebSocket("wss://gateway.discord.gg/?v=10&encoding=json");
         this.ws.addEventListener("open", this._on_ws_open);
         this.ws.addEventListener("close", this._on_ws_close);
@@ -155,6 +159,7 @@ class DiscordBot {
             debug_log("Dispatch: " + data.t);
             
             if (data.t == "READY") {
+                if (!this.application_id) this.application_id = data.d.application.id;
                 if (this.OnReady) {
                     this.OnReady(data.d);
                 }
@@ -201,6 +206,12 @@ class DiscordBot {
             };
         }
         this._send_authed_post_request(`https://discord.com/api/v10/interactions/${interaction.id}/${interaction.token}/callback`, body);
+    }
+
+    register_commands(commands, application_id) {
+        commands.forEach(command => {
+            this._send_authed_post_request(`https://discord.com/api/v10/applications/${application_id}/commands`, command)
+        });
     }
 }
 

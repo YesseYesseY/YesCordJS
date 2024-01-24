@@ -1,0 +1,24 @@
+[
+    {
+        "name": "ping",
+        "description": "It's a ping command."
+    },
+    {
+        "name": "add",
+        "description": "Add 2 numbers!",
+        "options": [
+            {
+                "type": 4,
+                "name": "firstnum",
+                "description": "The first number!",
+                "required": true
+            },
+            {
+                "type": 4,
+                "name": "lastnum",
+                "description": "The last number!",
+                "required": true
+            }
+        ]
+    }
+]

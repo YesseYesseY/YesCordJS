@@ -1,5 +1,5 @@
 const config = require("./config.json");
-const {DiscordBot, INTENTS, set_debug} = require("./discord.js")
+const {DiscordBot, INTENTS, set_debug} = require("./yescord.js")
 
 set_debug(true)
 

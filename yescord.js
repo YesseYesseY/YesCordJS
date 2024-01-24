@@ -26,6 +26,31 @@ const INTENTS = {
     AUTO_MODERATION_EXECUTION: 1 << 21
 };
 
+const INTERACTION_CALLBACK_TYPE = {
+    PONG: 1,
+    CHANNEL_MESSAGE_WITH_SOURCE: 4,
+    DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE: 5,
+    DEFERRED_UPDATE_MESSAGE: 6,
+    UPDATE_MESSAGE: 7,
+    APPLICATION_COMMAND_AUTOCOMPLETE_RESULT: 8,
+    MODAL: 9,
+    PREMIUM_REQUIRE: 10,
+}
+
+const MESSAGE_FLAGS = {
+    CROSSPOSTED: 1 << 0,
+    IS_CROSSPOST: 1 << 1,
+    SUPPRESS_EMBEDS: 1 << 2,
+    SOURCE_MESSAGE_DELETED: 1 << 3,
+    URGENT: 1 << 4,
+    HAS_THREAD: 1 << 5,
+    EPHEMERAL: 1 << 6,
+    LOADING: 1 << 7,
+    FAILED_TO_MENTION_SOME_ROLES_IN_THREAD: 1 << 8,
+    SUPPRESS_NOTIFICATIONS: 1 << 12,
+    IS_VOICE_MESSAGE: 1 << 13,
+}
+
 yesdebug = false
 
 /** @param {boolean} val  */
@@ -54,6 +79,9 @@ class DiscordBot {
 
         /** @description MESSAGE_CREATE gateway event */
         this.OnMessageCreate = undefined;
+
+        /** @description INTERACTION_CREATE gateway event */
+        this.OnInteractionCreate = undefined;
     }
 
     /** @param {string} token */
@@ -127,14 +155,20 @@ class DiscordBot {
             debug_log("Dispatch: " + data.t);
             
             if (data.t == "READY") {
-                if (this.OnReady != undefined) {
+                if (this.OnReady) {
                     this.OnReady(data.d);
                 }
             }
     
-            if (data.t == "MESSAGE_CREATE") {
-                if (this.OnMessageCreate != undefined) {
+            else if (data.t == "MESSAGE_CREATE") {
+                if (this.OnMessageCreate) {
                     this.OnMessageCreate(data.d);
+                }
+            }
+
+            else if (data.t == "INTERACTION_CREATE") {
+                if (this.OnInteractionCreate) {
+                    this.OnInteractionCreate(data.d)
                 }
             }
         }
@@ -152,6 +186,21 @@ class DiscordBot {
         this._send_authed_post_request(`https://discord.com/api/v10/channels/${channel_id}/messages`, {
             content: content
         });
+    }
+
+    respond_with_message(interaction, message, ephemeral=false) {
+        var body = {
+            "type": INTERACTION_CALLBACK_TYPE.CHANNEL_MESSAGE_WITH_SOURCE,
+        };
+        if (message) {
+            var flags = 0;
+            if (ephemeral) flags |= MESSAGE_FLAGS.EPHEMERAL;
+            body["data"] = {
+                "content": message,
+                "flags": flags
+            };
+        }
+        this._send_authed_post_request(`https://discord.com/api/v10/interactions/${interaction.id}/${interaction.token}/callback`, body);
     }
 }
 

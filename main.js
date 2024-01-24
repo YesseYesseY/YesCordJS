@@ -15,4 +15,11 @@ Bot.OnMessageCreate = (data) => {
     }
 }
 
+Bot.OnInteractionCreate = (data) => {
+    console.log(data)
+    if (data.data.name == "ping") {
+        Bot.respond_with_message(data, "Pong!", ephemeral=true)
+    }
+}
+
 Bot.start(config.token)
